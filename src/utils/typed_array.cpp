@@ -38,7 +38,7 @@ Local<Value> TypedArray::New(GDALDataType type, unsigned int length)  {
 
 	constructor = val.As<Function>();
 	Local<Value> size = Nan::New<Integer>(length * GDALGetDataTypeSize(type) / 8);
-	Local<Value> array_buffer = constructor->NewInstance(1, &size);
+	Local<Value> array_buffer = Nan::NewInstance(constructor, 1, &size).ToLocalChecked();
 
 	if(array_buffer.IsEmpty() || !array_buffer->IsObject()) {
 		Nan::ThrowError("Error allocating ArrayBuffer");
@@ -55,7 +55,7 @@ Local<Value> TypedArray::New(GDALDataType type, unsigned int length)  {
 	}
 
 	constructor = val.As<Function>();
-	Local<Object> array = constructor->NewInstance(1, &array_buffer);
+	Local<Object> array = Nan::NewInstance(constructor, 1, &array_buffer).ToLocalChecked();
 
 	if(array.IsEmpty() || !array->IsObject()) {
 		Nan::ThrowError("Error creating TypedArray");
@@ -71,7 +71,9 @@ GDALDataType TypedArray::Identify(Local<Object> obj) {
 	Nan::HandleScope scope;
 
 	Local<String> sym = Nan::New("_gdal_type").ToLocalChecked();
-	if (!obj->HasOwnProperty(sym)) return GDT_Unknown;
+	bool property = obj->HasOwnProperty(sym);
+
+	if (!property) return GDT_Unknown;
 	Local<Value> val = obj->Get(sym);
 	if (!val->IsNumber()) return GDT_Unknown;
 
