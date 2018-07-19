@@ -71,9 +71,9 @@ GDALDataType TypedArray::Identify(Local<Object> obj) {
 	Nan::HandleScope scope;
 
 	Local<String> sym = Nan::New("_gdal_type").ToLocalChecked();
-	bool property = obj->HasOwnProperty(sym);
+	Maybe<bool> property = obj->HasOwnProperty(Nan::GetCurrentContext(), sym);
 
-	if (!property) return GDT_Unknown;
+	if (!property.FromJust()) return GDT_Unknown;
 	Local<Value> val = obj->Get(sym);
 	if (!val->IsNumber()) return GDT_Unknown;
 
